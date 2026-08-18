@@ -95,13 +95,11 @@ func (s Shift) Complete(now time.Time) (Shift, error) {
 }
 
 func (s Shift) Cancel(now time.Time) (Shift, error) {
-	blocked := s.Status == Completed || s.Status == Cancelled
-	if blocked {
+	if s.Status == Completed || s.Status == Cancelled || s.Status == InProgress {
 		return Shift{}, apperror.Conflict(apperror.ErrInvalidState)
 	}
-	cancelled := s
-	cancelled.Status = Cancelled
-	cancelled.Version = s.Version + 1
-	cancelled.UpdatedAt = now.UTC()
-	return cancelled, nil
+	s.Status = Cancelled
+	s.Version++
+	s.UpdatedAt = now.UTC()
+	return s, nil
 }
